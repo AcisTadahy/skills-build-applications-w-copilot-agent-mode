@@ -1,0 +1,63 @@
+import { useEffect, useState } from 'react';
+import { apiBase, normalizeListResponse, type ListResponse } from '../api';
+
+interface Team {
+  id?: string;
+  name?: string;
+  members?: number;
+  createdAt?: string;
+  [key: string]: unknown;
+}
+
+export default function Teams() {
+  const [items, setItems] = useState<Team[]>([]);
+  const [pagination, setPagination] = useState<{ page: number; totalPages: number; totalItems: number } | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`${apiBase}/teams`)
+      .then((res) => res.json())
+      .then((payload) => {
+        const { items, pagination } = normalizeListResponse<Team>(payload as ListResponse<Team>);
+        setItems(items);
+        setPagination(pagination);
+      })
+      .catch((err) => setError(String(err)))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const columns = items.length > 0 ? Object.keys(items[0]) : ['name', 'members', 'createdAt'];
+
+  return (
+    <section className="mt-4">
+      <h2>Teams</h2>
+      <p>Fetching from <code>{`${apiBase}/teams`}</code></p>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {loading ? (
+        <div className="text-muted">Loading teams...</div>
+      ) : items.length === 0 ? (
+        <div className="alert alert-info">No teams found.</div>
+      ) : (
+        <div className="table-responsive">
+          <table className="table table-striped table-sm">
+            <thead>
+              <tr>{columns.map((key) => <th key={key}>{key}</th>)}</tr>
+            </thead>
+            <tbody>{items.map((item, index) => (
+              <tr key={item.id ?? index}>{columns.map((col) => <td key={col}>{String(item[col] ?? '')}</td>)}</tr>
+            ))}</tbody>
+          </table>
+        </div>
+      )}
+      {pagination && (
+        <div className="mt-3">
+          <small className="text-muted">
+            Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} items
+          </small>
+        </div>
+      )}
+    </section>
+  );
+}
