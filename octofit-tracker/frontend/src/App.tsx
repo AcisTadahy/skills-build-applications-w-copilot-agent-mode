@@ -28,7 +28,7 @@ function Home() {
           </p>
           <pre className="bg-light p-3">VITE_CODESPACE_NAME=my-codespace-name</pre>
           <p>
-            Fallback behavior is enabled. When <code>VITE_CODESPACE_NAME</code> is unset, the frontend uses <code>http://localhost:8000/api</code>.
+            When running inside GitHub Codespaces preview, the frontend can also infer the app host from the preview URL. If the env var is unset, it still falls back to <code>http://localhost:8000/api</code>.
           </p>
         </div>
       </div>
